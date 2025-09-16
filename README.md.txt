@@ -1,0 +1,1 @@
+This is one of the most fun classes I have ever taken. Not a lot of people may agree with me, and certainly not many will agree with my appreciation of Dr Humphreys, but that's why I'm in grad school. So I can take the classes that I find interesting, without people giving me a hard time. 
