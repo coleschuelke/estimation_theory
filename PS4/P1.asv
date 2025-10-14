@@ -1,0 +1,23 @@
+clear all;
+close all;
+clc;
+
+% Define
+x = [x_1; x_2];
+f = [x1 + x_2 + x_1*x_2 + 5;
+    x_1^2 + 2*x_2 - x_2^2 - 2];
+dfdx = [1+x_2, 2*x_1;
+    1+x_1, 2-2*x_2];
+
+% Pick an initial x_g
+x_g = [4; -4];
+
+% Update x_g 
+while update < 0.001
+    x = x_g;
+    f = [x(1) + x(2) + x(1)*x(2) + 5;
+    x(1)^2 + 2*x(2) - x(2)^2 - 2];
+    df
+
+    x_g = x_g - inv()
+end
