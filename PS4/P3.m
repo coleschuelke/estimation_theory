@@ -23,13 +23,13 @@ end
 function H = Hprime(x, t)    
     H = zeros(length(t), length(x));
     for j=1:length(t)
-        H(j, :) = [cos(x(2)*t(j) + x(3)), -t(j)*x(1)*sin(x(2)*t(j) + x(3)), -x(1)*sin(x(2)*t(j))];
+        H(j, :) = [cos(x(2)*t(j) + x(3)), -t(j)*x(1)*sin(x(2)*t(j) + x(3)), -x(1)*sin(x(2)*t(j) + x(3))];
     end
 end
 
 % Gauss Newton Method
 x_g = [1 6 0].';
-convergence_thresh = 0.002;
+convergence_thresh = 0.02;
 dx = 1;
 while dx > convergence_thresh
     % Calculate dx
@@ -40,6 +40,7 @@ while dx > convergence_thresh
     x_g = x_g + dx;
 end
 
+% Final Results
 x_g
 
 Hfinal = Rait*Hprime(x_g, thist);
