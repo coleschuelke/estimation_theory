@@ -28,16 +28,17 @@ function H = Hprime(x, t)
 end
 
 % Gauss Newton Method
-x_g = [4 6 0].';
+x_g = [1 6 0].';
 convergence_thresh = 0.0002;
+alpha = 0.5;
 dx = 1;
-while dx > convergence_thresh
+while norm(dx) > convergence_thresh
     % Calculate dx
     Hx = Rait*Hprime(x_g, thist);
     hx = Rait*hprime(x_g, thist);
     dx = (Hx.'*Hx)\Hx.'*(Rait*zprime-hx);
     % Update guess
-    x_g = x_g + 0.5 * dx;
+    x_g = x_g + alpha * dx;
 end
 
 % Final Results
