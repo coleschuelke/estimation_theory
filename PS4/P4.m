@@ -18,23 +18,23 @@ x_g = [8.1547e4; 1.2842e3; 1.2856e3; 1.2842e3]; % Initial guess
 
 % Set up GN params
 threshold = 1e-6;
-adjustStep = false;
+adjustStep = true;
 
 % Set up function handles
-H = @(x) Hprime(x, t);
-h = @(x) hprime(x, t);
-J = @(z, x, h) J_cost(z, x, h);
+Hprime = @(x) Hprime_func(x, t);
+hprime = @(x) hprime_func(x, t);
+J = @(z, x, h) J_func(z, x, h);
 
 
 % Run GN
-[x_sol, P_xx_sol] = gauss_newton(J, H, h, R, z, x_g, threshold, adjustStep);
+[x_sol, P_xx_sol] = gauss_newton(J, Hprime, hprime, R, z, x_g, threshold, adjustStep);
 
 x_sol
 P_xx_sol
 
 
 %% Functions
-function [H] = Hprime(x, t)
+function [H] = Hprime_func(x, t)
     % Constants
     d = 3e4; % m
     l = 4.4e5; % m
@@ -67,7 +67,7 @@ function [H] = Hprime(x, t)
     end
 end
 
-function [h] = hprime(x, t)
+function [h] = hprime_func(x, t)
     % Constants
     d = 3e4; % m
     l = 4.4e5; % m
@@ -93,36 +93,36 @@ function [h] = hprime(x, t)
 
 end
 
-function [x_star, P_xx_star] = gauss_newton(J, H, h, R, z, x_g, threshold, adjustStep)
+function [x_star, P_xx_star] = gauss_newton(J, Hprime, hprime, Rprime, zprime, x_g, threshold, adjustStep)
     dx = 1;
 
     % Perform normalization
-    Ra = chol(R);
+    Ra = chol(Rprime);
     Rait = inv(Ra.');
 
-    % Define function handles for normalized quantities
-    H_normalized = @(x) Rait*H(x);
-    h_normalized = @(x) Rait*h(x);
-    J_normalized = @(x) J(z, x, h_normalized);
+    % Define normalized quantities
+    H = @(x) Rait*Hprime(x);
+    h = @(x) Rait*hprime(x);
+    z = Rait*zprime;
 
     while norm(dx) > threshold
 
-        Hx = H_normalized(x_g);
-        hx = h_normalized(x_g);
-        dx = (Hx.'*Hx)\Hx.'*(Rait*z-hx);
+        Hx = H(x_g);
+        hx = h(x_g);
+        dx = (Hx.'*Hx)\Hx.'*(z-hx);
 
         % Calculate step size
         alpha = 1;
         if adjustStep == true
-            current_cost = J_normalized(x_g);
-            new_cost = J_normalized(x_g + alpha * dx);
+            current_cost = J(z, x_g, h);
+            new_cost = J(z, x_g + alpha * dx, h);
             while current_cost < new_cost
                 alpha = alpha / 2;
-                new_cost = J_normalized(x_g + alpha * dx);
+                new_cost = J(z, x_g + alpha * dx, h);
             end
         end
         x_g = x_g + alpha * dx; % Update the estimate
-        cost = J_normalized(x_g); % Calculate the cost at each step
+        cost = J(z, x_g, h); % Calculate the cost at each step
     end
     % Pass out final results
     x_star = x_g;
@@ -130,6 +130,6 @@ function [x_star, P_xx_star] = gauss_newton(J, H, h, R, z, x_g, threshold, adjus
     
 end
 
-function [cost] = J_cost(z, x, h)
+function [cost] = J_func(z, x, h)
     cost = norm(z - h(x))^2;
 end
