@@ -11,13 +11,13 @@ rho_b = data.rhobhist;
 z = zeros([2*length(t), 1]);
 z(1:2:end) = rho_a;
 z(2:2:end) = rho_b;
-Ri = [100, 0; 0 300];
+Ri = [100, 0; 0 900];
 R = kron(eye(length(t)), Ri);
 
 x_g = [8.1547e4; 1.2842e3; 1.2856e3; 1.2842e3]; % Initial guess
 
 % Set up GN params
-threshold = 1e-6;
+threshold = 1e-5;
 adjustStep = true;
 
 % Set up function handles
@@ -105,6 +105,8 @@ function [x_star, P_xx_star] = gauss_newton(J, Hprime, hprime, Rprime, zprime, x
     h = @(x) Rait*hprime(x);
     z = Rait*zprime;
 
+    % cost = J(z, x_g, h);
+
     while norm(dx) > threshold
 
         Hx = H(x_g);
@@ -127,9 +129,11 @@ function [x_star, P_xx_star] = gauss_newton(J, Hprime, hprime, Rprime, zprime, x
     % Pass out final results
     x_star = x_g;
     P_xx_star = inv(Hx.'*Hx);
+    cost  = J(z, x_g, h);
     
 end
 
 function [cost] = J_func(z, x, h)
     cost = norm(z - h(x))^2;
 end
+
