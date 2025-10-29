@@ -3,7 +3,7 @@ close all;
 clc;
 
 % Load problem data into the workspace
-run("kf_example02a.m");
+run("kf_example02b.m");
 
 %% Running the filter
 
@@ -57,7 +57,3 @@ hold on;
 plot([0 repelem(thist.', 2)], x(2, :), 'b');
 plot([0 repelem(thist.', 2)], x(2, :)+x2_cov, 'r');
 plot([0 repelem(thist.', 2)], x(2, :)-x2_cov, 'r');
-
-% Not sure the covariance should be oscillating like this
-figure;
-plot([0 repelem(thist.', 2)], x1_cov);
