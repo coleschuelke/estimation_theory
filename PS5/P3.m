@@ -28,11 +28,11 @@ for k=1:length(zhist)
     P(:, 4*k-1:4*k) = P_prior;
 
     % Update step
-    innov = zhist(k) - Hk*x_prior;
-    innov_cov = Hk*P_prior*Hk.' + Rk;
-    K = P_prior*Hk.'/inv(innov_cov);
-    x_post = x_prior + K*innov;
-    P_post = P_prior - K*innov_cov*K.';
+    nu = zhist(k) - Hk*x_prior;
+    S = Hk*P_prior*Hk.' + Rk;
+    K = P_prior*Hk.'/inv(S);
+    x_post = x_prior + K*nu;
+    P_post = P_prior - K*S*K.';
 
     % Store the correction
     x(:, 2*k + 1) = x_post;
