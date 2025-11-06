@@ -104,10 +104,16 @@ function [x_star, P_xx_star] = gauss_newton(J, Hprime, hprime, Rprime, zprime, x
     H = @(x) Rait*Hprime(x);
     h = @(x) Rait*hprime(x);
     z = Rait*zprime;
+    
 
+<<<<<<< HEAD
     % cost = J(z, x_g, h);
 
     while norm(dx) > threshold
+=======
+    iter = 0;
+    while norm(dx) > threshold && iter <= 100
+>>>>>>> 4c9d94e5e69781ece9d0152fb735a6323abdc9c1
 
         Hx = H(x_g);
         hx = h(x_g);
@@ -125,6 +131,9 @@ function [x_star, P_xx_star] = gauss_newton(J, Hprime, hprime, Rprime, zprime, x
         end
         x_g = x_g + alpha * dx; % Update the estimate
         cost = J(z, x_g, h); % Calculate the cost at each step
+        
+        % Increment iterations
+        iter = iter + 1;
     end
     % Pass out final results
     x_star = x_g;
