@@ -68,7 +68,7 @@ xhist(:, 1) = x0;
 x_last = x0;
 for k=1:kmax
     % Propagate state
-    vk = mvnrnd(zeros(size(Q, 1)), Q, 1);
+    vk = mvnrnd(zeros(size(Q, 1)), Q, 1); % Could pregenerate for computation
     x = F*x_last + Gamma*vk;
     xhist(k+1, :) = x;
 

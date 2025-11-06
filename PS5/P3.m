@@ -52,6 +52,7 @@ plot([0 repelem(thist.', 2)], x(1, :), 'b');
 plot([0 repelem(thist.', 2)], x(1, :)+x1_cov, 'r');
 plot([0 repelem(thist.', 2)], x(1, :)-x1_cov, 'r');
 
+% x2
 figure;
 hold on;
 plot([0 repelem(thist.', 2)], x(2, :), 'b');

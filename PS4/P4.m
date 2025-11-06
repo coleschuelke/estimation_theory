@@ -17,7 +17,7 @@ R = kron(eye(length(t)), Ri);
 x_g = [8.1547e4; 1.2842e3; 1.2856e3; 1.2842e3]; % Initial guess
 
 % Set up GN params
-threshold = 1e-5;
+threshold = 1e-9;
 adjustStep = true;
 
 % Set up function handles
@@ -106,14 +106,10 @@ function [x_star, P_xx_star] = gauss_newton(J, Hprime, hprime, Rprime, zprime, x
     z = Rait*zprime;
     
 
-<<<<<<< HEAD
-    % cost = J(z, x_g, h);
 
-    while norm(dx) > threshold
-=======
+
     iter = 0;
     while norm(dx) > threshold && iter <= 100
->>>>>>> 4c9d94e5e69781ece9d0152fb735a6323abdc9c1
 
         Hx = H(x_g);
         hx = h(x_g);
