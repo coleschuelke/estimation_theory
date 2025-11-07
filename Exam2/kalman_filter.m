@@ -1,4 +1,4 @@
-function [x_out,P_out] = kalman_filter(F, Gamma, H, Q, R, xhat0, P0, z)
+function [x_out,P_out, nis] = kalman_filter(F, Gamma, H, Q, R, xhat0, P0, z)
 %KALMAN_FILTER The most basic KF ever to exist
 
     num_meas = size(z, 1)/size(H, 1);
@@ -8,6 +8,7 @@ function [x_out,P_out] = kalman_filter(F, Gamma, H, Q, R, xhat0, P0, z)
     x_out(1, :) = xhat0;
     P_out = zeros([size(P0), num_meas*2 + 1]);
     P_out(:, :, 1) = P0;
+    nis = 0;
     
     % Inititialize priors
     x_post = xhat0;
@@ -22,7 +23,7 @@ function [x_out,P_out] = kalman_filter(F, Gamma, H, Q, R, xhat0, P0, z)
         
         % Store the prediction 
         x_out(2*k, :) = x_prior;
-        P_out(:, :, 2*k-1) = P_prior;
+        P_out(:, :, 2*k) = P_prior;
     
         % Update step
         nu = z(k, :).' - H*x_prior;
@@ -33,7 +34,9 @@ function [x_out,P_out] = kalman_filter(F, Gamma, H, Q, R, xhat0, P0, z)
     
         % Store the correction
         x_out(2*k + 1, :) = x_post;
-        P_out(:, :, (2*k-1)+1) = P_post;
+        P_out(:, :, 2*k + 1) = P_post;
+
+        nis = nis + nu.'*inv(S)*nu;
     end
 
 

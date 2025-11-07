@@ -133,3 +133,7 @@ steps_3 = step_sols(3, :, :)
 %%%%%%%%%%%%%%%%%% Explanation %%%%%%%%%%%%%%%%%%%%%%%%%
 % This plot shows a saddle, where guesses directly on the saddle do not
 % converge since the slope there is zero
+
+% 6 guesses diverged, meaning 21^2-6 = 435 guesses converged
+% Or maybe you're asking how many local minima there are in this region and
+% the answer to that is 2

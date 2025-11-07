@@ -62,7 +62,7 @@ u_improvement_perc = (abs(P_xx_sol) - abs(P_xx_sol_comb))./abs(P_xx_sol) * 100
 
 
 % Run GN - just bearing from a
-x_g_bear = x_sol;
+x_g_bear = x_sol_comb;
 [x_sol_bear, P_xx_sol_bear] = gauss_newton(J, Hprime_bear, hprime_bear, R_bear, z_bear, x_g_bear, threshold, adjustStep);
 
 
@@ -131,7 +131,7 @@ function [H] = Hprime_comb_func(x, t)
         h2x4 = tj*h2x2;
 
         h3x1 = (y0+vy0*tj-0.5*g*tj^2) / ((x0+vx0*tj-la)^2 + (y0+vy0*tj-0.5*g*tj^2)^2);
-        h3x2 = -1 / (((y0+vy0*tj-0.5*g*tj^2)^2) / (x0+vx0*tj-la) + (x0+vx0*tj-la));
+        h3x2 = -1 / ((((y0+vy0*tj-0.5*g*tj^2)^2) / (x0+vx0*tj-la)) + (x0+vx0*tj-la));
         h3x3 = tj*(y0+vy0*tj-0.5*g*tj^2) / ((x0+vx0*tj-la)^2 + (y0+vy0*tj-0.5*g*tj^2)^2);
         h3x4 = -tj / (((y0+vy0*tj-0.5*g*tj^2)^2) / (x0+vx0*tj-la) + (x0+vx0*tj-la));
 
@@ -221,8 +221,8 @@ function [h] = hprime_comb_func(x, t)
         tj = t(j);
         h1 = sqrt((vx0*tj+x0-la)^2 + (y0+vy0*tj-0.5*g*tj^2)^2);
         h2 = sqrt((x0+vx0*tj-lb)^2 + (y0+vy0*tj-0.5*g*tj^2)^2);
-        h3 = pi - atan((y0+vy0*tj-0.5*g*tj^2) / (x0+vx0*tj-la));
-        h4 = atan((y0+vy0*tj-0.5*g*tj^2) / (lb - (x0+vx0*tj)));
+        h3 = pi - atan2((y0+vy0*tj-0.5*g*tj^2), (x0+vx0*tj-la));
+        h4 = atan2((y0+vy0*tj-0.5*g*tj^2), (lb - (x0+vx0*tj)));
 
         h((j-1)*4 + 1) = h1;
         h((j-1)*4 + 2) = h2;
