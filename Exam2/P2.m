@@ -15,10 +15,10 @@ step_sols = zeros(3, 6, 2);
 [C, R] = meshgrid(vector, vector);
 grid = cat(3, R, C);
 
+saved_sol = 0;
 for row=vector
     for col=vector
         x_g = squeeze(grid(row+11, col+11, :));
-        saved_sol = 0;
         save = false;
         if isequal(x_g, [4; -4]) || isequal(x_g, [6; 0]) || isequal(x_g, [-5; 5])
             step_sol = zeros(2, 6);
@@ -61,67 +61,75 @@ end
 % Reshape to columns
 col_sol = reshape(permute(sol, [3 1 2]), size(sol, 3), []).';
 col_guess = reshape(permute(grid, [3 1 2]), size(grid, 3), []).';
+
+% Remove divergneces
+valid_indices = all(~isnan(col_sol), 2);
+col_sol = col_sol(valid_indices, :);
+col_guess = col_guess(valid_indices, :);
+
 % Round for finding uniqueness
 col_sol = round(col_sol, 4);
 [unique_sols, ~, labels] = unique(col_sol, 'rows');
-
 num_unique_sols = size(unique_sols, 1);
 
-% --- 3. Plotting by Group ---
 
+% USED GEMINI FOR SOME BASIC PLOTTING
 figure;
 hold on;
 
 % Define the symbols and colors we'll cycle through
 symbols = ['o', 's', '^', 'v', 'P', '*', 'X', 'D'];
-colors = lines(num_unique_sols); % 'lines' is a good colormap
 
-plot_handles = zeros(num_unique_sols, 1); % To store handles for the legend
-legend_entries = cell(num_unique_sols, 1);
 
 for k = 1:num_unique_sols
-    % Get the symbol and color for this group
+    % Get the symbol
     sym = symbols(mod(k-1, length(symbols)) + 1);
-    col = colors(k, :);
-    
-    % --- A. Plot all initial guesses for this group ---
-    
-    % Find the indices (rows) of all guesses that belong to group 'k'
+
+    % Find the indices of relevant guesses
     indices_for_this_group = (labels == k);
     
-    % Get the [x, y] coordinates of these guesses
+    % Get  coordinates
     guesses_to_plot = col_guess(indices_for_this_group, :);
     
-    % Plot the cloud of initial guesses
+    % Plot all initial guesses
     plot(guesses_to_plot(:, 1), guesses_to_plot(:, 2), ...
         'Marker', sym, ...
-        'Color', col, ...
-        'LineStyle', 'none', ...
-        'HandleVisibility', 'off'); % Hide from legend
-        
-    % --- B. Plot the unique solution itself ---
+        'LineStyle', 'none');
     
-    % Get the [u, v] coordinates of this group's solution
+    % Get the solution
     sol = unique_sols(k, :);
     
-    % Plot the solution point to be highly visible
-    % (Larger, with a black edge and solid face color)
+    % Plot plot it
     plot_handles(k) = plot(sol(1), sol(2), ...
         'Marker', sym, ...
-        'MarkerFaceColor', col, ...
-        'MarkerEdgeColor', 'k', ...
+        'MarkerEdgeColor', 'r', ...
         'MarkerSize', 12, ...
         'LineWidth', 2);
-        
-    % Store the text for the legend
-    legend_entries{k} = sprintf('Solution %d: (%.2f, %.2f)', k, sol(1), sol(2));
 end
 
-% --- Finalize Plot ---
 hold off;
-axis equal; % Ensures x and y axes have the same scale
-grid on;
+margin = 0.10;
+x_min = min(vector);
+x_max = max(vector);
+y_min = min(vector);
+y_max = max(vector);
+x_range = x_max - x_min;
+y_range = y_max - y_min;
+x_pad = x_range * margin;
+y_pad = y_range * margin;
+xlim([x_min - x_pad, x_max + x_pad]);
+ylim([y_min - y_pad, y_max + y_pad]);
+axis equal; 
 xlabel('X-coordinate');
 ylabel('Y-coordinate');
 title('Initial Guesses Grouped by Convergent Solution');
-legend(plot_handles, legend_entries, 'Location', 'best');
+
+% Print the saved steps
+steps_1 = step_sols(1, :, :)
+steps_2 = step_sols(2, :, :)
+steps_3 = step_sols(3, :, :)
+
+
+%%%%%%%%%%%%%%%%%% Explanation %%%%%%%%%%%%%%%%%%%%%%%%%
+% This plot shows a saddle, where guesses directly on the saddle do not
+% converge since the slope there is zero
