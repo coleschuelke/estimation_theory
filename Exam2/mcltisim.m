@@ -61,18 +61,18 @@ zhist = zeros(kmax, size(H, 1));
 
 % Draw initial condition and save
 x0 = mvnrnd(xbar0, P0, 1);
-xhist(:, 1) = x0;
+xhist(1, :) = x0;
 
 % Run the sim
-x_last = x0;
+x_last = x0.';
 for k=1:kmax
     % Propagate state
-    vk = mvnrnd(zeros(size(Q, 1)), Q, 1); % Could pregenerate for computation
+    vk = mvnrnd(zeros(size(Q, 1)), Q, 1).'; % Could pregenerate for computation
     x = F*x_last + Gamma*vk;
-    xhist(k+1, :) = x;
+    xhist(k+1, :) = x.';
 
     % Take measurement
-    wk = mvnrnd(zeros(size(R, 1)), R, 1);
+    wk = mvnrnd(zeros(size(R, 1)), R, 1).';
     zk = H*x + wk;
     zhist(k, :) = zk;
 
