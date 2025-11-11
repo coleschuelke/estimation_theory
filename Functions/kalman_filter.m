@@ -1,5 +1,9 @@
-function [x_out, P_out, nis] = kalman_filter(F, Gamma, H, Q, R, xhat0, P0, z)
+function [x_out, P_out, t_out, nis] = kalman_filter(F, Gamma, H, Q, R, xhat0, P0, z)
 %KALMAN_FILTER The most basic KF ever to exist
+
+
+    % Pass out a time vector
+    t_out = [0 repelem(1:length(z), 2)].';
 
     num_meas = size(z, 1)/size(H, 1);
     
@@ -16,7 +20,7 @@ function [x_out, P_out, nis] = kalman_filter(F, Gamma, H, Q, R, xhat0, P0, z)
     
     % Recursive Estimation
     for k=1:num_meas
-        
+
         % Prediction step
         x_prior = F*x_post;
         P_prior = F*P_post*F.' + Gamma*Q*Gamma.';
@@ -36,7 +40,7 @@ function [x_out, P_out, nis] = kalman_filter(F, Gamma, H, Q, R, xhat0, P0, z)
         x_out(2*k + 1, :) = x_post;
         P_out(:, :, 2*k + 1) = P_post;
 
-        if nargout > 2
+        if nargout > 3
             nis = nis + nu.'*inv(S)*nu;
         end
     end
