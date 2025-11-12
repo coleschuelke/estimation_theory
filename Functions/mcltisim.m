@@ -1,4 +1,4 @@
-function [xhist,zhist] = mcltisim(F,Gamma,H,Q,R,xbar0,P0,kmax)
+function [thist, xhist, zhist] = mcltisim(F,Gamma,H,Q,R,xbar0,P0,kmax)
 % ltisim : Monte-Carlo simulation of a linear time invariant system.
 %
 %
@@ -56,8 +56,10 @@ function [xhist,zhist] = mcltisim(F,Gamma,H,Q,R,xbar0,P0,kmax)
 %+==============================================================================+
 
 % Initialize the output vectors
+thist = 0:kmax;
 xhist = zeros(kmax+1, length(xbar0));
 zhist = zeros(kmax, size(H, 1));
+
 
 % Draw initial condition and save
 x0 = mvnrnd(xbar0, P0, 1);
