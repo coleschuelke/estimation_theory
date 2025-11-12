@@ -1,4 +1,4 @@
-function [x_out, P_out, t_out, nis] = kalman_filter(F, Gamma, H, Q, R, xhat0, P0, z)
+function [t_out,x_out, P_out, nis] = kalman_filter(F, Gamma, H, Q, R, xhat0, P0, z)
 %KALMAN_FILTER The most basic KF ever to exist
 
 

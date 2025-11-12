@@ -22,14 +22,15 @@ P0      = [  0.25000000000000,  0.08000000000000;...
 
 [xa, za] = mcltisim(Fk, Gammak, Hk, Qk, Rk, xhat0, P0, 500);
 
-[xa_filt, Pa_filt, t_out] = kalman_filter(Fk, Gammak, Hk, Qk, Rk, xhat0, P0, za);
+[t_out, xa_filt, Pa_filt] = kalman_filter(Fk, Gammak, Hk, Qk, Rk, xhat0, P0, za);
 
-sys = ss(Fk, [eye(size(Fk)), Gammak], Hk, 0, -1);
-[km, L, P_bar_ss, W_ss] = kalman(sys, Qk, Rk);
+% sys = ss(Fk, [eye(size(Fk)), Gammak], Hk, 0, -1);
+% [km, L, P_bar_ss, W_ss] = kalman(sys, Qk, Rk);
 
-P_bar_ss
+% P_bar_ss
 
-Pa_filt(:, :, end)
+last = Pa_filt(:, :, end)
+second_to_last = Pa_filt(:, :, end-1) % Matches the ss result from kalman
 
 % Extract the std from cov
 x1_cov = squeeze(sqrt(Pa_filt(1, 1, :)));
@@ -42,5 +43,9 @@ hold on;
 plot(t_out, xa_filt(:, 1), 'b');
 plot(t_out, xa_filt(:, 1)+x1_cov, 'r');
 plot(t_out, xa_filt(:, 1)-x1_cov, 'r');
+hold off;
+
+% Test the new plotting function
+plot_kf(t_out, xa_filt, Pa_filt, 0:500, xa);
 
 
