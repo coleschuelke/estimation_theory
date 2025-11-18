@@ -63,16 +63,20 @@ zhist = zeros(kmax, size(H, 1));
 x0 = mvnrnd(xbar0, P0, 1);
 xhist(1, :) = x0;
 
+% Generate noise
+vk_vec = mvnrnd(zeros(size(Q, 1), 1), Q, kmax).';
+wk_vec = mvnrnd(zeros(size(R, 1), 1), R, kmax).';
+
 % Run the sim
 x_last = x0.';
 for k=1:kmax
     % Propagate state
-    vk = mvnrnd(zeros(size(Q, 1)), Q, 1).'; % Could pregenerate for computation
+    vk = vk_vec(:, k);
     x = F*x_last + Gamma*vk;
     xhist(k+1, :) = x.';
 
     % Take measurement
-    wk = mvnrnd(zeros(size(R, 1)), R, 1).';
+    wk = wk_vec(:, k);
     zk = H*x + wk;
     zhist(k, :) = zk;
 
