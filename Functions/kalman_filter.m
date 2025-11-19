@@ -1,13 +1,12 @@
-function [t_out,x_out, P_out, nis] = kalman_filter(F, Gamma, H, Q, R, xhat0, P0, z)
+function [t_out, x_out, P_out, nis] = kalman_filter(F, Gamma, H, Q, R, xhat0, P0, z)
 %KALMAN_FILTER The most basic KF ever to exist
 
-
-    % Pass out a time vector
-    t_out = [0 repelem(1:length(z), 2)].';
+% Should update this to be able to accept a G and u
 
     num_meas = size(z, 1)/size(H, 1);
     
     % Initialize output
+    t_out = [0 repelem(1:num_meas, 2)].';
     x_out = zeros(num_meas*2 + 1, length(xhat0));
     x_out(1, :) = xhat0;
     P_out = zeros([size(P0), num_meas*2 + 1]);

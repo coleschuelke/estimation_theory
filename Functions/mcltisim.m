@@ -1,4 +1,4 @@
-function [xhist,zhist] = mcltisim(F,Gamma,H,Q,R,xbar0,P0,kmax)
+function [t_out, x_out, z_out] = mcltisim(F,Gamma,H,Q,R,xbar0,P0,kmax)
 % ltisim : Monte-Carlo simulation of a linear time invariant system.
 %
 %
@@ -56,12 +56,13 @@ function [xhist,zhist] = mcltisim(F,Gamma,H,Q,R,xbar0,P0,kmax)
 %+==============================================================================+
 
 % Initialize the output vectors
-xhist = zeros(kmax+1, length(xbar0));
-zhist = zeros(kmax, size(H, 1));
+t_out  = 0:kmax;
+x_out = zeros(kmax+1, length(xbar0));
+z_out = zeros(kmax, size(H, 1));
 
 % Draw initial condition and save
 x0 = mvnrnd(xbar0, P0, 1);
-xhist(1, :) = x0;
+x_out(1, :) = x0;
 
 % Generate noise
 vk_vec = mvnrnd(zeros(size(Q, 1), 1), Q, kmax).';
@@ -73,12 +74,12 @@ for k=1:kmax
     % Propagate state
     vk = vk_vec(:, k);
     x = F*x_last + Gamma*vk;
-    xhist(k+1, :) = x.';
+    x_out(k+1, :) = x.';
 
     % Take measurement
     wk = wk_vec(:, k);
     zk = H*x + wk;
-    zhist(k, :) = zk;
+    z_out(k, :) = zk;
 
     % For next iteration
     x_last = x;

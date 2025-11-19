@@ -5,6 +5,7 @@ clc;
 % This script is just testing for the sim 
 
 addpath('..\Functions\');
+rng(45, 'twister');
 
 Fk     = [  0.81671934103521,  0.08791146849849;...
           -3.47061412053765,  0.70624978972000];     % for all k
@@ -20,32 +21,35 @@ xhat0   = [  0.20000000000000;...
 P0      = [  0.25000000000000,  0.08000000000000;...
             0.08000000000000,  0.50000000000000];
 
-[xa, za] = mcltisim(Fk, Gammak, Hk, Qk, Rk, xhat0, P0, 500);
+[ta, xa, za] = mcltisim(Fk, Gammak, Hk, Qk, Rk, xhat0, P0, 500);
 
-[t_out, xa_filt, Pa_filt] = kalman_filter(Fk, Gammak, Hk, Qk, Rk, xhat0, P0, za);
+[t_kf, x_kf, P_kf] = kalman_filter(Fk, Gammak, Hk, Qk, Rk, xhat0, P0, za);
+
+[t_srif, x_srif, P_srif] = srif(Fk, Gammak, Hk, Qk, Rk, xhat0, P0, za);
 
 % sys = ss(Fk, [eye(size(Fk)), Gammak], Hk, 0, -1);
 % [km, L, P_bar_ss, W_ss] = kalman(sys, Qk, Rk);
 
 % P_bar_ss
 
-last = Pa_filt(:, :, end)
-second_to_last = Pa_filt(:, :, end-1) % Matches the ss result from kalman
+last = P_kf(:, :, end)
+second_to_last = P_kf(:, :, end-1) % Matches the ss result from kalman
 
 % Extract the std from cov
-x1_cov = squeeze(sqrt(Pa_filt(1, 1, :)));
-x2_cov = squeeze(sqrt(Pa_filt(2, 2, :)));
+x1_cov = squeeze(sqrt(P_kf(1, 1, :)));
+x2_cov = squeeze(sqrt(P_kf(2, 2, :)));
 
 %% Plotting
 % x1
 figure;
 hold on;
-plot(t_out, xa_filt(:, 1), 'b');
-plot(t_out, xa_filt(:, 1)+x1_cov, 'r');
-plot(t_out, xa_filt(:, 1)-x1_cov, 'r');
+plot(t_kf, x_kf(:, 1), 'b');
+plot(t_kf, x_kf(:, 1)+x1_cov, 'r');
+plot(t_kf, x_kf(:, 1)-x1_cov, 'r');
 hold off;
 
 % Test the new plotting function
-plot_kf(t_out, xa_filt, Pa_filt, 0:500, xa);
+plot_kf(t_kf, x_kf, P_kf, ta, xa);
+plot_kf(t_srif, x_srif, P_srif, ta, xa);
 
 
