@@ -60,7 +60,7 @@ function [] = plot_kf(time_kf, x_kf, P_kf, time_truth, x_truth, num_sigma)
     fig1 = figure('Name', 'State Estimates');
     tlo1 = tiledlayout(nx, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
     
-    title(tlo1, 'State Estimate Summary by State', 'FontSize', 14, 'FontWeight', 'bold');
+    title(tlo1, 'State Estimate Summary', 'FontSize', 14, 'FontWeight', 'bold');
     xlabel(tlo1, 'Time [s]', 'FontSize', 12);
 
     ax_handles = gobjects(nx, 1);
@@ -105,7 +105,7 @@ function [] = plot_kf(time_kf, x_kf, P_kf, time_truth, x_truth, num_sigma)
         fig2 = figure('Name', 'Estimation Errors');
         tlo2 = tiledlayout(nx, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
         
-        title(tlo2, 'Estimation Error Summary by State', 'FontSize', 14, 'FontWeight', 'bold');
+        title(tlo2, 'Estimation Error Summary', 'FontSize', 14, 'FontWeight', 'bold');
         xlabel(tlo2, 'Time [s]', 'FontSize', 12);
         
         ax_err = gobjects(nx, 1);

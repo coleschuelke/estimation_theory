@@ -13,7 +13,9 @@ x_out = zeros(num_meas*2 + 1, length(xhat0));
 x_out(1, :) = xhat0;
 P_out = zeros([size(P0), num_meas*2 + 1]);
 P_out(:, :, 1) = P0;
-nis = 0;
+if nargout > 3
+    nis = zeros(num_meas, 1);
+end
 
 % Compute some constants
 Ra = chol(R); % This is not necessarily the same for every measurement in general
@@ -33,10 +35,10 @@ for k=1:num_meas
     % Propagate
     lower_left = -Rxx*(F\Gamma);
     lower_right = Rxx/F;
-    [Qb, Rb] = qr([Rvv, zeros(size(Rvv, 1), size(lower_right, 2)); lower_left, lower_right]);
+    [Qb, Rb] = qr([Rvv, zeros(nv, nx); lower_left, lower_right]);
     
     bottom = zx + Rxx*(F\G)*u;
-    zb = Qb.'*[zeros(1, size(bottom, 2)); bottom];
+    zb = Qb.'*[zeros(nv, 1); bottom];
     
     % Extract block elements from matrices
     zx_bar = zb(end-nx+1:end); % I hate matlab indexing
@@ -58,6 +60,12 @@ for k=1:num_meas
     % Extract block elements from matrices
     Rxx = Rc(1:nx, 1:nx); 
     zx = zc(1:nx);
+
+    % Compute NIS
+    if nargout > 3
+        zr = zc(end-nz+1:end);
+        nis(k) = zr.'*zr;
+    end
 
     % Save P and x_hat
     x_out(2*k + 1, :) = Rxx\zx;

@@ -12,7 +12,9 @@ function [t_out, x_out, P_out, nis] = kalman_filter(F, Gamma, H, Q, R, xhat0, P0
     x_out(1, :) = xhat0;
     P_out = zeros([size(P0), num_meas*2 + 1]);
     P_out(:, :, 1) = P0;
-    nis = 0;
+    if nargout > 3
+        nis = zeros(num_meas, 1);
+    end
     
     % Inititialize priors
     x_post = xhat0;
@@ -41,7 +43,7 @@ function [t_out, x_out, P_out, nis] = kalman_filter(F, Gamma, H, Q, R, xhat0, P0
         P_out(:, :, 2*k + 1) = P_post;
 
         if nargout > 3
-            nis = nis + nu.'*inv(S)*nu;
+            nis(k) = nu.'*inv(S)*nu;
         end
     end
 

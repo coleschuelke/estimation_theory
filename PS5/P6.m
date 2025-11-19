@@ -23,14 +23,17 @@ P0      = [  0.25000000000000,  0.08000000000000;...
 
 [ta, xa, za] = mcltisim(Fk, Gammak, Hk, Qk, Rk, xhat0, P0, 500);
 
-[t_kf, x_kf, P_kf] = kalman_filter(Fk, Gammak, Hk, Qk, Rk, xhat0, P0, za);
+[t_kf, x_kf, P_kf, nis_kf] = kalman_filter(Fk, Gammak, Hk, Qk, Rk, xhat0, P0, za);
 
-[t_srif, x_srif, P_srif] = srif(Fk, Gammak, Hk, Qk, Rk, xhat0, P0, za);
+[t_srif, x_srif, P_srif, nis_srif] = srif(Fk, Gammak, Hk, Qk, Rk, xhat0, P0, za);
 
 % sys = ss(Fk, [eye(size(Fk)), Gammak], Hk, 0, -1);
 % [km, L, P_bar_ss, W_ss] = kalman(sys, Qk, Rk);
 
 % P_bar_ss
+
+nis_srif
+nis_kf
 
 % Extract the std from cov
 x1_cov = squeeze(sqrt(P_kf(1, 1, :)));
@@ -46,8 +49,8 @@ plot(t_kf, x_kf(:, 1)-x1_cov, 'r');
 hold off;
 
 % Test the new plotting function
-plot_kf(t_kf, x_kf, P_kf, ta, xa);
-plot_kf(t_srif, x_srif, P_srif, ta, xa);
+plot_kf(t_kf, x_kf, P_kf, ta, xa, 3);
+plot_kf(t_srif, x_srif, P_srif, ta, xa, 3);
 
 
 
