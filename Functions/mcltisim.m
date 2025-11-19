@@ -55,6 +55,8 @@ function [t_out, x_out, z_out] = mcltisim(F,Gamma,H,Q,R,xbar0,P0,kmax)
 % Author:
 %+==============================================================================+
 
+% Should make this accept input too
+
 % Initialize the output vectors
 t_out  = 0:kmax;
 x_out = zeros(kmax+1, length(xbar0));

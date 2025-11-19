@@ -18,8 +18,8 @@ nis = 0;
 % Compute some constants
 Ra = chol(R); % This is not necessarily the same for every measurement in general
 Rait = inv(Ra).';
-G = zeros(nx, 1);
-u = 0;
+G = zeros(nx, 1); % No inputs for now
+u = 0; % No inputs for now
 
 % Set up initial priors
 Rxx = inv(chol(P0)).'; % Smarter way to do this in the notes
@@ -38,6 +38,7 @@ for k=1:num_meas
     bottom = zx + Rxx*(F\G)*u;
     zb = Qb.'*[zeros(1, size(bottom, 2)); bottom];
     
+    % Extract block elements from matrices
     zx_bar = zb(end-nx+1:end); % I hate matlab indexing
     Rxx_bar = Rb(end-nx+1:end, end-nx+1:end);
 
@@ -54,6 +55,7 @@ for k=1:num_meas
 
     zc = Qc.'*[zx_bar; za];
 
+    % Extract block elements from matrices
     Rxx = Rc(1:nx, 1:nx); 
     zx = zc(1:nx);
 
@@ -62,7 +64,5 @@ for k=1:num_meas
     P_out(:, :, 2*k + 1) = (Rxx.'\eye(nx))*(Rxx\eye(nx));
 
 end
-
-% Should I output an entire time-series in original coordinates?
 
 end
