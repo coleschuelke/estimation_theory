@@ -9,7 +9,7 @@ run("kf_example02a.m");
 
 % The filter
 
-[x, P_out] = kalman_filter(Fk, Gammak, Hk, Qk, Rk, xhat0, P0, zhist);
+[t_out, x, P_out] = kalman_filter(Fk, Gammak, Hk, Qk, Rk, xhat0, P0, zhist);
 
 P_final = P_out(:, :, end)
 P_mid = P_out(:, :, ceil(end/2))

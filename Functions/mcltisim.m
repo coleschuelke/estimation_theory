@@ -62,6 +62,7 @@ t_out  = 0:kmax;
 x_out = zeros(kmax+1, length(xbar0));
 z_out = zeros(kmax, size(H, 1));
 
+
 % Draw initial condition and save
 x0 = mvnrnd(xbar0, P0, 1);
 x_out(1, :) = x0;

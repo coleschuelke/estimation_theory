@@ -4,6 +4,7 @@ function [t_out, x_out, P_out, nis] = kalman_filter(F, Gamma, H, Q, R, xhat0, P0
 % Should update this to be able to accept a G and u
 
     num_meas = size(z, 1)/size(H, 1);
+    nx = length(xhat0);
     
     % Initialize output
     t_out = [0 repelem(1:num_meas, 2)].';
@@ -33,7 +34,7 @@ function [t_out, x_out, P_out, nis] = kalman_filter(F, Gamma, H, Q, R, xhat0, P0
         S = H*P_prior*H.' + R;
         K = P_prior*H.'/S;
         x_post = x_prior + K*nu;
-        P_post = P_prior - K*S*K.';
+        P_post = (eye(nx) - K*H)*P_prior*(eye(nx) - K*H).' + K*R*K.'; % Joseph form for numerical stability
     
         % Store the correction
         x_out(2*k + 1, :) = x_post;

@@ -32,9 +32,6 @@ P0      = [  0.25000000000000,  0.08000000000000;...
 
 % P_bar_ss
 
-last = P_kf(:, :, end)
-second_to_last = P_kf(:, :, end-1) % Matches the ss result from kalman
-
 % Extract the std from cov
 x1_cov = squeeze(sqrt(P_kf(1, 1, :)));
 x2_cov = squeeze(sqrt(P_kf(2, 2, :)));
@@ -51,5 +48,6 @@ hold off;
 % Test the new plotting function
 plot_kf(t_kf, x_kf, P_kf, ta, xa);
 plot_kf(t_srif, x_srif, P_srif, ta, xa);
+
 
 
