@@ -1,5 +1,6 @@
 function [t_out, x_out, P_out, nis] = srif(F, Gamma, H, Q, R, xhat0, P0, z)
-%SRIF Square-root information filter for analysis (not real time)
+%SRIF Square-root information filter for analysis (not real time, since we
+% are transforming back to conventional representation)
 
 % Characterize the data
 nx = length(xhat0);
