@@ -91,6 +91,7 @@ x_out(end, :) = x_forward(end, :);
 P_out(:, :, end) = P_forward(:, :, end);
 
 % Start with the final values
+% Rxx carries over from srif
 Rvv_bar = Rvv_bar_forward(:, :, end);
 Rvx_bar = Rvx_bar_forward(:, :, end);
 zx = zx_forward(end, :).';
@@ -133,9 +134,10 @@ for i=num_meas:-1:1
     % Pvv_out(:, :, i)
 
     % Update for next iteration
+    Rxx = Rxx_star; % From last smoothing iteration
     Rvv_bar = Rvv_bar_forward(:, :, i); % Use from forward pass
     Rvx_bar = Rvx_bar_forward(:, :, i); % Use from forward pass
-    zx = zx_forward(i, :).'; % Use from last smoothing iteration
+    zx = zx_star; % Use from last smoothing iteration
     zv = zv_bar_forward(i, :).'; % Use from forward pass
     
 end
