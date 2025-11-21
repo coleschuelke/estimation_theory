@@ -5,7 +5,7 @@ clc;
 addpath(['..\Functions\']);
 
 % Load the matrices into the workspace
-run('kf_example03b.m');
+run('kf_example03a.m');
 
 % Kalman Filter
 [t_kf, x_kf, P_kf, nis_kf] = kalman_filter(Fk, Gammak, Hk, Qk, Rk, xhat0, P0, zhist);

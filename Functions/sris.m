@@ -134,11 +134,13 @@ for i=num_meas:-1:1
     % Pvv_out(:, :, i)
 
     % Update for next iteration
-    Rxx = Rxx_star; % From last smoothing iteration
-    Rvv_bar = Rvv_bar_forward(:, :, i); % Use from forward pass
-    Rvx_bar = Rvx_bar_forward(:, :, i); % Use from forward pass
-    zx = zx_star; % Use from last smoothing iteration
-    zv = zv_bar_forward(i, :).'; % Use from forward pass
+    if i > 1  % Nothing to reassign on last iteration
+        Rxx = Rxx_star; % From last smoothing iteration
+        Rvv_bar = Rvv_bar_forward(:, :, i-1); % Use from forward pass
+        Rvx_bar = Rvx_bar_forward(:, :, i-1); % Use from forward pass
+        zx = zx_star; % Use from last smoothing iteration
+        zv = zv_bar_forward(i-1, :).'; % Use from forward pass
+    end
     
 end
 
