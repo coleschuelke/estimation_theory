@@ -10,7 +10,7 @@ nv = size(Q, 1);
 num_meas = size(z, 1)/size(H, 1);
 
 % Initialize forward pass outputs
-t_out = [0 1:num_meas].';
+t_out = [0:num_meas].';
 x_forward = zeros(num_meas*2 + 1, length(xhat0));
 x_forward(1, :) = xhat0;
 P_forward = zeros([size(P0), num_meas*2 + 1]);
