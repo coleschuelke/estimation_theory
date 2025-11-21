@@ -4,7 +4,7 @@ function [] = plot_kf(time_kf, x_kf, P_kf, time_truth, x_truth, num_sigma)
 %   Usage:
 %       plot_kf(t_kf, x_kf, P_kf)
 %       plot_kf(t_kf, x_kf, P_kf, t_true, x_true)
-%       plot_kf(t_kf, x_kf, P_kf, [], [], 3) % <-- This now works
+%       plot_kf(t_kf, x_kf, P_kf, [], [], 3) 
 %       plot_kf(t_kf, x_kf, P_kf, t_true, x_true, 3)
 
     %% 1. Input Parsing (Positional Implementation)

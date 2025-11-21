@@ -63,7 +63,7 @@ for k=1:num_meas
 
     % Save P_bar and x_bar
     x_forward(2*k, :) = Rxx_bar\zx_bar;
-    P_forward(:, :, 2*k) = (Rxx_bar.'\eye(nx))*(Rxx_bar\eye(nx)); % Computationally efficient implementation
+    P_forward(:, :, 2*k) = inv(Rxx_bar)*inv(Rxx_bar).';
 
     % Update
     zk = z(k, :).';
@@ -81,7 +81,7 @@ for k=1:num_meas
 
     % Save P and x_hat
     x_forward(2*k + 1, :) = Rxx\zx;
-    P_forward(:, :, 2*k + 1) = (Rxx.'\eye(nx))*(Rxx\eye(nx));
+    P_forward(:, :, 2*k + 1) = inv(Rxx)*inv(Rxx).';
 
 end
 

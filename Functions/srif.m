@@ -47,7 +47,7 @@ for k=1:num_meas
 
     % Save P_bar and x_bar
     x_out(2*k, :) = Rxx_bar\zx_bar;
-    P_out(:, :, 2*k) = (Rxx_bar.'\eye(nx))*(Rxx_bar\eye(nx)); % Computationally efficient implementation
+    P_out(:, :, 2*k) = inv(Rxx_bar)*inv(Rxx_bar).';
 
     % Update
     zk = z(k, :).';
@@ -70,7 +70,7 @@ for k=1:num_meas
 
     % Save P and x_hat
     x_out(2*k + 1, :) = Rxx\zx;
-    P_out(:, :, 2*k + 1) = (Rxx.'\eye(nx))*(Rxx\eye(nx));
+    P_out(:, :, 2*k + 1) = inv(Rxx)*inv(Rxx).';
 
 end
 
