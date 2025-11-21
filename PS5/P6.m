@@ -5,7 +5,7 @@ clc;
 % This script is just testing for the sim 
 
 addpath('..\Functions\');
-rng(45, 'twister');
+rng(43, 'twister');
 
 Fk     = [  0.81671934103521,  0.08791146849849;...
           -3.47061412053765,  0.70624978972000];     % for all k
@@ -23,7 +23,7 @@ P0      = [  0.25000000000000,  0.08000000000000;...
 
 [ta, xa, za] = mcltisim(Fk, Gammak, Hk, Qk, Rk, xhat0, P0, 500);
 
-[t_kf, x_kf, P_kf, nis_kf] = kalman_filter(Fk, Gammak, Hk, Qk, Rk, xhat0, P0, za);
+[t_kf, x_kf, P_kf, nis_kf] = kalman_filter(Fk, Gammak, Hk, Qk*100, Rk, xhat0, P0, za);
 
 [t_srif, x_srif, P_srif, nis_srif] = srif(Fk, Gammak, Hk, Qk, Rk, xhat0, P0, za);
 
@@ -31,9 +31,6 @@ P0      = [  0.25000000000000,  0.08000000000000;...
 % [km, L, P_bar_ss, W_ss] = kalman(sys, Qk, Rk);
 
 % P_bar_ss
-
-nis_srif
-nis_kf
 
 % Extract the std from cov
 x1_cov = squeeze(sqrt(P_kf(1, 1, :)));
@@ -51,6 +48,8 @@ hold off;
 % Test the new plotting function
 plot_kf(t_kf, x_kf, P_kf, ta, xa, 3);
 plot_kf(t_srif, x_srif, P_srif, ta, xa, 3);
+
+[NEES, SNEES, RMSE] = filter_analysis(x_kf, P_kf, xa);
 
 
 
