@@ -45,10 +45,11 @@ Rc = H.'*R*H;
 % Draw the realizations
 polar_noise = mvnrnd([0;0], R, 1000).';
 polar_meas = [10^5; 45*pi/180] + polar_noise;
-cartesian_meas = zeros(size(polar_meas));
+cart_meas = zeros(size(polar_meas));
 
-for i=1:length(cartesian_meas)
-    cartesian_meas(:, i) = hinv_nl(polar_meas(1, i), polar_meas(2, i));
+for i=1:length(cart_meas)
+    cart_meas(:, i) = hinv_nl(polar_meas(1, i), polar_meas(2, i));
 end
 
-cart_avg = mean(cartesian_meas, 2);
+cart_avg = mean(cart_meas, 2)
+cart_0 = hinv_nl(10^5, 45*pi/180)
