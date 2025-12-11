@@ -2,6 +2,9 @@ clear variables;
 close all;
 clc;
 
+% Set a seed 
+rng(45);
+
 % Building the functions
 function [p] = h_nl(x1, x2)
     p = [sqrt(x1^2 + x2^2); atan2(x1, x2)];
@@ -53,3 +56,18 @@ end
 
 cart_avg = mean(cart_meas, 2)
 cart_0 = hinv_nl(10^5, 45*pi/180)
+
+% Calculate the cartesian noise
+cart_noise = cart_meas - cart_0;
+
+% Hypothesis test for the covariance matrix
+W = 0;
+for i=1:length(cart_meas)
+    W = W + cart_0.'*Rc*cart_0;
+end
+
+ub = chi2inv(0.995, 2000)
+lb = chi2inv(0.005, 2000)
+W
+
+residual_prob = chi2pdf(W, 2000)
