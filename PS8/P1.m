@@ -2,6 +2,9 @@ clear variables;
 close all;
 clc;
 
+addpath('..\Functions\');
+rng(55);
+
 % Sim Parameters
 kmax = 5000;
 
@@ -47,18 +50,30 @@ Qk = cat(3, Q, Q, Q);
 
 % Create input
 u = zeros(kmax, 1);
-u(501:600, :) = 7;
+u(501:600, :) = 4;
+u(951:1000, :) = -2;
 
 xbar0 = [0;0.1];
-P0 = Q*100;
+P0 = 10*eye(2);
 
 
 % Simulate Truth
-[t_truth, x_truth, z] = mcltisim(Fk1, Gk1, Gamma, H, Q, R, u, xbar0, P0, kmax);
+[t_truth, x_truth, z] = mcltisim((Fk1+Fk2)/2, (Gk1+Gk2)/2, Gamma, H, Q, R, u, xbar0, P0, kmax);
 
 % Run the MM filter
 [t_mm, x_mm, P_mm, mu_mm] = static_mm_filter(Fk, Gk, Gammak, Hk, Qk, Rk, u, z, xbar0, P0);
 
+% Switching case
+t = 0:5000;
+x_truth_s = zeros(kmax+1, 2);
+z_switch = zeros(kmax, 1);
+x_truth_s(1, :) = xbar0;
+for m=1:5
+    [~, x_truth_s((m-1)*kmax/5+1:m*kmax/5+1, :), z_switch((m-1)*kmax/5+1:m*kmax/5, :)] = mcltisim(Fk(:, :, mod(m, 3)+1), Gk(:, :, mod(m, 3)+1), Gamma, H, Q, R, u, x_truth_s((m-1)*kmax/5+1, :), 1e-6*eye(2), kmax/5);
+end
+
+% Run MM Filter
+[t_mm_s, x_mm_s, P_mm_s, mu_mm_s] = static_mm_filter(Fk, Gk, Gammak, Hk, Qk, Rk, u, z_switch, xbar0, P0, 'LowerBound', 0.005);
 
 %% Plotting
 figure;
@@ -69,3 +84,13 @@ plot(t_mm, x1_think, 'r')
 
 figure;
 plot(t_mm, mu_mm);
+legend('mu1', 'mu2', 'mu3');
+
+figure;
+plot(t, x_truth_s(:, 1))
+plot(t_mm_s, squeeze(x_mm_s(1, end, :)), 'r');
+
+figure;
+plot(t_mm_s, mu_mm_s);
+legend('mu1', 'mu2', 'mu3');
+

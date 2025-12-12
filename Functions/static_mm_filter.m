@@ -1,6 +1,19 @@
-function [t_out, x_out, P_out, mu_out] = static_mm_filter(F, G, Gamma, H, Q, R, u, z, xhat0, P0)
+function [t_out, x_out, P_out, mu_out] = static_mm_filter(F, G, Gamma, H, Q, R, u, z, xhat0, P0, varargin)
 %STATIC_MM_FILTER Linear Multiple Model filter with the assumption that true model
 % parameters are constant in time
+
+lower_bound = 0;
+
+%--- loading any optional arguments
+while ~isempty(varargin)
+    switch lower(varargin{1}) % switch to lowercase only
+        case 'lowerbound'
+              lower_bound = varargin{2};
+        otherwise
+              error(['Unexpected option: ' varargin{1}])
+    end
+    varargin(1:2) = [];
+end
 
 nx = length(xhat0);
 nz = size(H, 1);
@@ -38,7 +51,11 @@ for k=1:num_meas
 
     % Update the weights
     for i=1:num_models
-        mu(i) = mu(i) * mvnpdf(nu(:, j), zeros(size(nu(:, j))), S(:, :, j)); % There's a Cholesky way to get this that is faster
+        mu(i) = mu(i) * mvnpdf(nu(:, i), zeros(size(nu(:, i))), S(:, :, i)); % There's a Cholesky way to get this that is faster
+        % ad hoc lower bound
+        if mu(i) < lower_bound
+            mu(i) = lower_bound;    
+        end
     end
     mu = mu / sum(mu); % Normalize the weights
     mu_out(k+1, :) = mu;
