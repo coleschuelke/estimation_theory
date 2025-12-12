@@ -1,4 +1,4 @@
-function [t_out, x_out, P_out, nis] = kalman_filter(F, Gamma, H, Q, R, xhat0, P0, z)
+function [t_out, x_out, P_out, nis] = kalman_filter(F, G, Gamma, H, Q, R, u, z, xhat0, P0)
 %KALMAN_FILTER The most basic KF ever to exist
 
 % Should update this to be able to accept a G and u
@@ -24,7 +24,7 @@ function [t_out, x_out, P_out, nis] = kalman_filter(F, Gamma, H, Q, R, xhat0, P0
     for k=1:num_meas
 
         % Prediction step
-        x_prior = F*x_post;
+        x_prior = F*x_post + G*u(k, :).';
         P_prior = F*P_post*F.' + Gamma*Q*Gamma.';
         
         % Store the prediction 

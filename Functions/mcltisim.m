@@ -1,4 +1,4 @@
-function [t_out, x_out, z_out] = mcltisim(F,Gamma,H,Q,R,xbar0,P0,kmax)
+function [t_out, x_out, z_out] = mcltisim(F,G,Gamma,H,Q,R,u,xbar0,P0,kmax)
 % ltisim : Monte-Carlo simulation of a linear time invariant system.
 %
 %
@@ -76,7 +76,7 @@ x_last = x0.';
 for k=1:kmax
     % Propagate state
     vk = vk_vec(:, k);
-    x = F*x_last + Gamma*vk;
+    x = F*x_last + G*u(k, :).' + Gamma*vk;
     x_out(k+1, :) = x.';
 
     % Take measurement
