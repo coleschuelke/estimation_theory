@@ -2,6 +2,8 @@ function [xbarkp1, Pbarkp1, xhatkp1, Pkp1, nu, S] = realtime_kf(Fk, Gk, Gammak, 
 %REALTIME_KF Single KF step
 %   Detailed explanation goes here
 
+nx = length(xhatk);
+
 % Predict
 xbarkp1 = Fk*xhatk + Gk*uk;
 Pbarkp1 = Fk*Pk*Fk.' + Gammak*Qk*Gammak.';
