@@ -1,0 +1,50 @@
+function [t_out, x_out, P_out] = static_mm_filter(F, Gamma, H, Q, R, xhat0, P0, z)
+%STATIC_MM_FILTER Linear Multiple Model filter with the assumption that true model
+% parameters are constant in time
+
+nx = length(xhat0);
+nz = size(H, 1);
+num_meas = size(z, 1)/nz;
+num_models = size(F, 3);
+
+
+% Initialize output
+x_out = zeros(nx, num_models+1, num_meas+1); % Save all estimates plus the fused
+P_out = zeros(nx, nx, num_models+1, num_meas+1);
+t_out = 0:num_meas;
+
+% Initialize filters
+mu = ones(1, num_models)/num_models; % Start with equal probability
+nu = zeros(nz, num_models);
+
+x_out(:, :, 1) = repmat(xhat0, 1, num_models+1); % Save all the initial guesses
+P_out(:, :, :, 1) = repmat(P0, 1, 1, num_models+1); % Save all the initial covariances
+
+for k=1:num_meas
+    % Run all the filters one step
+    for j=1:num_models
+    [~, ~, xhat(:, j), P(:, :, j), nu(:, j), S(:, :, j)] = realtimekf(F(:, :, j), Gamma(:, :, j), H(:, :, j), Q(:, :, j), R(:, :, j), xhat(j), P(j), z(k, :));
+    end
+
+    % Save the estimates
+    x_out(:, 1:num_models, k+1) = xhat;
+    P_out(:, :, 1:num_models, k+1) = P;
+
+    % Update the weights
+    for i=1:num_models
+        mu(i) = mu(i) * mvnpdf(nu(:, j), zeros(size(nu(:, j))), S(:, :, j)); % There's a Cholesky way to get this that is faster
+    end
+    mu = mu / sum(mu); % Normalize the weights
+    
+    % Calculate the fused estimate
+    x_fused = xhat*mu.';
+    P_fused = 0;
+    for m=1:num_models % Sure there's a way to vectorize this a little smarter
+        P_fused = P_fused + mu(m) * (P(:, :, m0) + (xhat(:, m) - x_fused)*(xhat(:, m) - x_fused).');
+    end
+
+    % Save the fused estimates
+    x_out(:, end, k+1) = x_fused;
+    P_out(:, :, end, k+1) = P_fused;
+
+end
