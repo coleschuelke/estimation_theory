@@ -1,4 +1,4 @@
-function [xbarkp1, Pbarkp1, xhatkp1, Pkp1, nu, S] = realtime_kf(Fk, Gk, Gammak, Hk, Qk, Rk, uk, zkp1, xhatk, Pk)
+function [xbarkp1, Pbarkp1, xhatkp1, Pkp1, nu, S] = kf_step(Fk, Gk, Gammak, Hk, Qk, Rk, uk, zkp1, xhatk, Pk)
 %REALTIME_KF Single KF step
 %   Detailed explanation goes here
 

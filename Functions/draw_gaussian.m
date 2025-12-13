@@ -1,5 +1,4 @@
-function [x] = draw_gaussian(xbar, Pxx)
+function [x] = draw_gaussian(xbar, Pxx, nsamples)
     T = chol(Pxx);
-
-    x = T * randn(length(xbar), 1) + xbar;
+    x = T * randn(length(xbar), nsamples) + xbar;
 end
