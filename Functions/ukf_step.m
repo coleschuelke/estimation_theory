@@ -1,4 +1,4 @@
-function [xhatkp1, Pkp1] = ukf_step(dyn_fun, h_fun, Q, R, alpha, beta, kappa, z, xhat, Pxx)
+function [xhatkp1, Pkp1] = ukf_step(dyn_fun, h_fun, dt, Q, R, alpha, beta, kappa, z, xhat, Pxx)
 %UKF Unscented Kalman Filter
 % Initial constants
 nx = length(xhat);
@@ -25,20 +25,20 @@ end
 
 % Propagate the points to the time of the meas (should accomodate meas timestamp)
 % Could use the same chi here, don't need the old points again
-chi_t = zeros(na, npts);
+chi_transf = zeros(na, npts);
 for i=1:npts
-    [~, x] = ode113(dyn_fun, [0, 0.1], chi(:, i)); % Only 90% sure this is right
-    chi_t(:, i) = x(end, :).';
+    [~, x] = ode113(dyn_fun, [0, dt], chi(:, i));
+    chi_transf(:, i) = x(end, :).';
 end
 % Compute xbar and Pbar
 w0m = lambda/(na+lambda);
 w0c = lambda/(na+lambda) + 1 - alpha^2 + beta;
 wi = 1/(2*(na+lambda));
 
-xabar = w0m*chi_t(:, 1) + sum(wi*chi_t(:, 2:end), 2);
-Pabar = w0c*(chi_t(:, 1) - xabar)*(chi_t(:, 1) - xabar).';
+xabar = w0m*chi_transf(:, 1) + sum(wi*chi_transf(:, 2:end), 2);
+Pabar = w0c*(chi_transf(:, 1) - xabar)*(chi_transf(:, 1) - xabar).';
 for i=2:npts
-    Pabar = Pabar + wi*(chi_t(:, i) - xabar)*(chi_t(:, i) - xabar).';
+    Pabar = Pabar + wi*(chi_transf(:, i) - xabar)*(chi_transf(:, i) - xabar).';
 end
 xbar = xabar(1:nx);
 Pbar = Pabar(1:nx, 1:nx);
@@ -54,6 +54,7 @@ Pa = zeros(na, na);
 Pa(1:nx, 1:nx) = Pbar;
 Pa(end-nz+1:end, end-nz+1:end) = R;
 
+% Form new sigma points
 Sx = chol(Pa).';
 gamma = zeros(na, npts);
 gamma(:, 1) = xa;
@@ -62,29 +63,29 @@ for i=2:2:npts
     gamma(:, i+1) = xa - sqrt(na + lambda)*Sx(:, i/2);
 end
 
-% Transform points through the measurement function
+% Transform points through the measurement function (state-> meas space)
 % Could use the same gamma here, don't need the old points again
-gamma_t = zeros(nz, npts);
+gamma_transf = zeros(nz, npts);
 for i=1:npts
-    gamma_t(:, i) = h_fun(gamma(1:nx, i), gamma(nx+1:end, i));
+    gamma_transf(:, i) = h_fun(gamma(1:nx, i), gamma(nx+1:end, i)); % One bearing is on the order of the range
 end
 % Compute xbar and Pbar
 w0m = lambda/(na+lambda);
 w0c = lambda/(na+lambda) + 1 - alpha^2 + beta;
 wi = 1/(2*(na+lambda));
 
-zbar = w0m*gamma_t(:, 1) + sum(wi*gamma_t(:, 2:end), 2);
-Pzz = w0c*(gamma_t(:, 1) - zbar)*(gamma_t(:, 1) - zbar).';
+zbar = w0m*gamma_transf(:, 1) + sum(wi*gamma_transf(:, 2:end), 2); % Very reasonable
+Pzz = w0c*(gamma_transf(:, 1) - zbar)*(gamma_transf(:, 1) - zbar).';
 for i=2:npts
-    Pzz = Pzz + wi*(gamma_t(:, i) - zbar)*(gamma_t(:, i) - zbar).';
+    Pzz = Pzz + wi*(gamma_transf(:, i) - zbar)*(gamma_transf(:, i) - zbar).';
 end
-Pxz = w0c*(gamma(1:nx, 1) - xbar)*(gamma_t(:, 1) - zbar).';
+Pxz = w0c*(gamma(1:nx, 1) - xbar)*(gamma_transf(:, 1) - zbar).';
 for i=2:npts
-    Pxz = Pxz + wi*(gamma(1:nx, i) - xbar)*(gamma_t(:, i) - zbar).';
+    Pxz = Pxz + wi*(gamma(1:nx, i) - xbar)*(gamma_transf(:, i) - zbar).';
 end
 
 % Compute the LMMSE update
-xhatkp1 = xbar + Pxz/Pzz*(z.' - zbar);
+xhatkp1 = xbar + (Pxz/Pzz)*(z.' - zbar);
 Pkp1 = Pbar - Pxz/Pzz*Pxz.';
     
 end

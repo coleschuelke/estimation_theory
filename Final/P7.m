@@ -17,10 +17,6 @@ R = diag([2*pi/180, 2*pi/180, 0.1].^2);
 nx = size(Q, 1);
 nz = size(R, 1);
 
-% Initialize outputs
-x_ukf = zeros(nsteps+1, nx);
-P_ukf = zeros(nx, nx, nsteps+1);
-
 % Set up filter inputs
 dyn_handle = @(t, x) dyn_car(x);
 h_handle = @(x, w) h_car([x; w]);
@@ -30,13 +26,20 @@ alpha = 1e-3;
 beta = 2;
 kappa = 0;
 
+% Initialize outputs
+x_ukf = zeros(nsteps+1, nx);
+x_ukf(1, :) = xhat;
+P_ukf = zeros(nx, nx, nsteps+1);
+P_ukf(:, :, 1) = P;
+
 % Run the filter
 for i=1:nsteps
+    % Process the measurement
     raw_meas = lidar(i).z;
-    processed_meas = [min(raw_meas(:, 1)), max(raw_meas(:,1)), min(raw_meas(:, 2))];
+    processed_meas = [min(raw_meas(:, 2)), max(raw_meas(:, 2)), max(raw_meas(:, 1))];
 
     % Run the UKF step
-    [xhat, P] = ukf_step(dyn_handle, h_handle, Q, R, alpha, beta, kappa, processed_meas, xhat, P);
+    [xhat, P] = ukf_step(dyn_handle, h_handle, 0.1, Q, R, alpha, beta, kappa, processed_meas, xhat, P);
     
     % Save the estimates
     x_ukf(i+1, :) = xhat.';
@@ -45,3 +48,12 @@ for i=1:nsteps
 end
 
 %% Plotting
+% Plot just the truth for now
+h = figure;
+xlim([0, 100]);
+ylim([-50, 50])
+for k=1:nsteps
+    plotcar(car(k).x, 'b-', h)
+    plotcar(x_ukf(k, :).', 'y-', h)
+    % pause(0.02)
+end
