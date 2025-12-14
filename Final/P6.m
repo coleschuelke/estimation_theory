@@ -2,6 +2,80 @@ clear variables;
 close all;
 clc;
 
+addpath('..\Functions\');
+
+% Case i
+rbari = 76; thetabari = -3*pi/180;
+sr2_i = 1^2; st2_i = (pi/180)^2;
+xbari = [rbari; thetabari];
+P_pi = diag([sr2_i, st2_i]);
+
+% Case ii
+rbarii = 76; thetabarii = -3*pi/180;
+sr2_ii = 1^2; st2_ii = (15*pi/180)^2;
+xbarii = [rbarii; thetabarii];
+P_pii = diag([sr2_ii, st2_ii]);
+
+% Linear transformations
+cbar_li = h_nl(rbari, thetabari) % Linearly transformed mean
+Pcc_li = H(rbari, thetabari)*P_pi*H(rbari, thetabari).' % Linearly transformed cov
+
+cbar_lii = h_nl(rbarii, thetabarii) % Linearly transformed mean
+Pcc_lii = H(rbarii, thetabarii)*P_pii*H(rbarii, thetabarii).' % Linearly transformed cov
+
+% UT transformations
+nl_handle = @(x) h_nl(x(1), x(2));
+
+[cbar_uti, Pcc_uti] = ut(xbari, P_pi, nl_handle, 1e-3, 2, 0) % Unscented mean and cov
+[cbar_utii, Pcc_utii] = ut(xbarii, P_pii, nl_handle, 1e-3, 2, 0) % Unscented mean and cov
+
+% Validation with large numbers
+% Case i
+polar_points_i = draw_gaussian(xbari, P_pi, 1e6);
+cartesian_points_i = zeros(2, 1e6);
+for i=1:1e6
+    cartesian_points_i(:, i) = h_nl(polar_points_i(1, i), polar_points_i(2, i));
+end
+cartesian_mean_i = mean(cartesian_points_i, 2) % True mean
+cartesian_cov_i = cov(cartesian_points_i.') % True cov
+
+% Case 2
+polar_points_ii = draw_gaussian(xbarii, P_pii, 1e6);
+cartesian_points_ii = zeros(2, 1e6);
+for i=1:1e6
+    cartesian_points_ii(:, i) = h_nl(polar_points_ii(1, i), polar_points_ii(2, i));
+end
+cartesian_mean_ii = mean(cartesian_points_ii, 2) % True mean
+cartesian_cov_ii = cov(cartesian_points_ii.') % True cov
+
+% Print results
+format long;
+disp('Case i')
+disp('Linearized mean and covariance')
+cbar_li = h_nl(rbari, thetabari) % Linearly transformed mean
+Pcc_li = H(rbari, thetabari)*P_pi*H(rbari, thetabari).' % Linearly transformed cov
+disp('Unscented mean and covariance')
+[cbar_uti, Pcc_uti] = ut(xbari, P_pi, nl_handle, 1e-3, 2, 0) % Unscented mean and cov
+disp('True mean and covariance')
+cartesian_mean_i = mean(cartesian_points_i, 2) % True mean
+cartesian_cov_i = cov(cartesian_points_i.') % True cov
+
+disp('Case ii')
+disp('Linearized mean and covariance')
+cbar_lii = h_nl(rbarii, thetabarii) % Linearly transformed mean
+Pcc_lii = H(rbarii, thetabarii)*P_pii*H(rbarii, thetabarii).' % Linearly transformed cov
+disp('Unscented mean and covariance')
+[cbar_utii, Pcc_utii] = ut(xbarii, P_pii, nl_handle, 1e-3, 2, 0) % Unscented mean and cov
+disp('True mean and covariance')
+cartesian_mean_ii = mean(cartesian_points_ii, 2) % True mean
+cartesian_cov_ii = cov(cartesian_points_ii.') % True cov
+
+plot_cov_comparison(cartesian_mean_i, cartesian_cov_i, cbar_li, Pcc_li, cbar_uti, Pcc_uti);
+plot_cov_comparison(cartesian_mean_ii, cartesian_cov_ii, cbar_lii, Pcc_lii, cbar_utii, Pcc_utii)
+
+
+%% Functions
+% Transformations 
 function [cartesian] = h_nl(r, theta)
     x = r*cos(theta);
     y = r*sin(theta);
@@ -17,23 +91,7 @@ function [cartesian] = H_lin(rbar, thetabar, r, theta)
     cartesian = h_nl(rbar, thetabar) + H*[r-rbar; theta-thetabar];
 end
 
-% Case i
-rbari = 76;
-thetabari = -3*pi/180;
-P_pi = diag([1^2, (pi/180)^2]);
-
-cbari = h_nl(rbari, thetabari)
-Pcci = H(rbari, thetabari)*P_pi*H(rbari, thetabari).'
-
-% Case ii
-rbarii = 76;
-thetabarii = -3*pi/180;
-P_pii = diag([1^2, (15*pi/180)^2]);
-
-cbarii = h_nl(rbarii, thetabarii)
-Pccii = H(rbarii, thetabarii)*P_pii*H(rbarii, thetabarii).'
-
-%% Unscented Transform
+% Unscented Transform
 function [xbar_t, Pxx_t] = ut(xbar, Pxx, nl_fun, alpha, beta, kappa, varargin)
     
     % varargin to take more points
@@ -53,7 +111,7 @@ function [xbar_t, Pxx_t] = ut(xbar, Pxx, nl_fun, alpha, beta, kappa, varargin)
     end
 
     % Push points through function
-    % chi_t = arrayfun(nl_fun, chi); % I know I found a way to do this the other day
+    chi_t = zeros(nx, 2*npts+1);
     for m=1:2*npts+1
         chi_t(:, m) = nl_fun(chi(:, m));
     end
@@ -68,71 +126,35 @@ function [xbar_t, Pxx_t] = ut(xbar, Pxx, nl_fun, alpha, beta, kappa, varargin)
     end
 end
 
-nl_handle = @(x) h_nl(x(1), x(2));
-
-[cbar_uti, Pcc_uti] = ut([rbari; thetabari], P_pi, nl_handle, 1e-3, 2, 0)
-[cbar_utii, Pcc_utii] = ut([rbarii; thetabarii], P_pii, nl_handle, 1e-3, 2, 0)
-
-
-% Validation with vectors
-polar_points = zeros(2, 1e6);
-for i=1:1e6
-    polar_points(:, i) = draw_gaussian([76; -3*pi/180], diag([1^2, (15*pi/180)^2]));
-end
-
-cartesian_points = zeros(2, 1e6);
-for i=1:1e6
-    cartesian_points(:, i) = h_nl(polar_points(1, i), polar_points(2, i));
-end
-
-cartesian_mean = mean(cartesian_points, 2)
-cartesian_cov = cov(cartesian_points.')
-
-plot_cov_comparison([76; -3*pi/180], diag([1^2, (15*pi/180)^2]), cartesian_mean, cartesian_cov, cbarii, Pccii, cbar_utii, Pcc_utii);
-
-function plot_cov_comparison(mu_prior, P_prior, mu_true, P_true, mu_lin, P_lin, mu_ut, P_ut)
+function plot_cov_comparison(mu_true, P_true, mu_lin, P_lin, mu_ut, P_ut)
 % PLOT_COV_COMPARISON 
 % Visualizes and compares 4 Gaussian distributions.
 
     % Create figure
-    if isempty(get(groot,'CurrentFigure'))
-        figure('Color', 'w', 'Name', 'Covariance Comparison');
-    else
-        set(gcf, 'Color', 'w');
-    end
+    figure;
     
     hold on; grid on; axis equal;
     
-    % --- 1. Prior (Grey) ---
-    plot_gaussian(mu_prior, P_prior, [0.5 0.5 0.5], '--', 'o');
-    
     % --- 2. True Posterior (Green) ---
-    plot_gaussian(mu_true, P_true, [0 0.6 0], '-', 'p');
+    plot_gaussian(mu_true, P_true, 'g', '--', 'x');
     
     % --- 3. Linearized/EKF (Red) ---
-    plot_gaussian(mu_lin, P_lin, [0.8 0 0], '-.', 'x');
+    plot_gaussian(mu_lin, P_lin, 'r', '-', 'o');
     
     % --- 4. Unscented/UKF (Blue) ---
-    plot_gaussian(mu_ut, P_ut, [0 0 0.8], '-', '+');
+    plot_gaussian(mu_ut, P_ut, 'b', '-.', '^');
     
-    legend('Prior', 'True Posterior', 'Linearized (EKF)', 'Unscented (UKF)', 'Location', 'best');
+    legend('True Posterior', 'Linearized (EKF)', 'Unscented (UKF)');
     title('Comparison of Mean and Covariance Estimates');
-    xlabel('State X'); ylabel('State Y');
+    xlabel('X'); ylabel('Y');
     set(gca, 'FontSize', 12);
     hold off;
 end
 
-% ---------------------------------------------------------
-% HELPER FUNCTION (ROBUST VERSION)
-% ---------------------------------------------------------
-function output = plot_gaussian(mu, P, col, style, marker)
-    % --- 1. Handle Missing Arguments (Defaults) ---
-    if nargin < 3, col = 'b'; end       % Default: Blue
-    if nargin < 4, style = '-'; end     % Default: Solid Line
-    if nargin < 5, marker = '.'; end    % Default: Dot
+function plot_gaussian(mu, P, col, style, marker)
 
     % Settings
-    n_sig = 2;    % 2-sigma
+    n_sig = 3;    % 3-sigma
     lw    = 2;    % Line Width
     ms    = 10;   % Marker Size
 
@@ -152,19 +174,7 @@ function output = plot_gaussian(mu, P, col, style, marker)
     % --- 3. Plotting ---
     % Only plot if we are holding the plot (standard usage) 
     % or if no output is requested (void call)
-    if ~nargout || ishold
-        plot(final_pts(1,:), final_pts(2,:), 'Color', col, 'LineStyle', style, 'LineWidth', lw);
-        h_marker = plot(mu(1), mu(2), 'Marker', marker, 'Color', col, 'MarkerFaceColor', col, 'MarkerSize', ms, 'LineWidth', 2);
-    end
+    plot(final_pts(1,:), final_pts(2,:), 'Color', col, 'LineStyle', style, 'LineWidth', lw);
+    plot(mu(1), mu(2), 'Marker', marker, 'Color', col, 'MarkerFaceColor', col, 'MarkerSize', ms, 'LineWidth', 2, 'HandleVisibility','off');
 
-    % --- 4. Smart Output ---
-    % If the user asks for a return value (e.g., pts = draw_gaussian...),
-    % return the POINTS. If they want the handle, they usually don't assign it 
-    % inside a math loop.
-    if nargout > 0
-        output = final_pts; % Returns 2x100 matrix of ellipse points
-    else
-        % If no output requested, just return the marker handle silently
-        output = h_marker; 
-    end
 end

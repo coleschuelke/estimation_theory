@@ -3,10 +3,9 @@ close all;
 clc;
 
 addpath('..\Functions\');
+load('mmExampleModeSwitchingData.mat')
 rng(55);
-
-% Sim Parameters
-kmax = 5000;
+lower_bound = 0.01;
 
 % Model Parameters
 c1 = 0.1; c2 = 0.5; c3 = 1;
@@ -48,49 +47,81 @@ Hk = cat(3, H, H, H);
 Rk = cat(3, R, R, R);
 Qk = cat(3, Q, Q, Q);
 
-% Create input
-u = zeros(kmax, 1);
-u(501:600, :) = 4;
-u(951:1000, :) = -2;
+% Inputs
+u = utruekhist;
 
+% Initial Conditions
 xbar0 = [0;0.1];
 P0 = 10*eye(2);
 
-
-% Simulate Truth
-[t_truth, x_truth, z] = mcltisim((Fk1+Fk2)/2, (Gk1+Gk2)/2, Gamma, H, Q, R, u, xbar0, P0, kmax);
+% Measurements
+z = ztruekhist(2:end);
 
 % Run the MM filter
-[t_mm, x_mm, P_mm, mu_mm] = static_mm_filter(Fk, Gk, Gammak, Hk, Qk, Rk, u, z, xbar0, P0);
+[t_mm, x_mm, P_mm, mu_mm] = static_mm_filter(Fk, Gk, Gammak, Hk, Qk, Rk, u, z, xbar0, P0, 'LowerBound', lower_bound);
 
-% Switching case
-t = 0:5000;
-x_truth_s = zeros(kmax+1, 2);
-z_switch = zeros(kmax, 1);
-x_truth_s(1, :) = xbar0;
-for m=1:5
-    [~, x_truth_s((m-1)*kmax/5+1:m*kmax/5+1, :), z_switch((m-1)*kmax/5+1:m*kmax/5, :)] = mcltisim(Fk(:, :, mod(m, 3)+1), Gk(:, :, mod(m, 3)+1), Gamma, H, Q, R, u, x_truth_s((m-1)*kmax/5+1, :), 1e-6*eye(2), kmax/5);
+% Calculate consistency
+nees = 0;
+nx = length(xbar0);
+l = length(tkhist);
+for j=1:l
+    nees = nees + (squeeze(x_mm(:, end, j)) - xtruekhist(j, :).').'*inv(P_mm(:, :, j))*(squeeze(x_mm(:, end, j)) - xtruekhist(j, :).');
+end
+snees = nees/(nx*l)
+
+% Tuning the lower bound
+window = [0.0001, 0.1];
+num_points = 10;
+points = linspace(window(1), window(2), num_points);
+points = [0.0001, 0.001, 0.01, 0.1];
+cons_results = zeros(size(points));
+rms_results = zeros(size(points));
+for r=1:length(points)
+    [~, x_mm, P_mm, ~] = static_mm_filter(Fk, Gk, Gammak, Hk, Qk, Rk, u, z, xbar0, P0, 'LowerBound', points(r));
+    % Calculate consistency
+    nees = 0;
+    nx = length(xbar0);
+    l = length(tkhist);
+    for j=1:l
+        nees = nees + (squeeze(x_mm(:, end, j)) - xtruekhist(j, :).').'*inv(P_mm(:, :, j))*(squeeze(x_mm(:, end, j)) - xtruekhist(j, :).');
+    end    
+    cons_results(r) = nees/(nx*l);
+    rms_results(r) = trace(sum(P_mm(:, :, end, :), 4));
+    % Calculate RMS
 end
 
-% Run MM Filter
-[t_mm_s, x_mm_s, P_mm_s, mu_mm_s] = static_mm_filter(Fk, Gk, Gammak, Hk, Qk, Rk, u, z_switch, xbar0, P0, 'LowerBound', 0.005);
+% Fit a parabola and minimize
+p_cons = polyfit(points, cons_results, 2);
+a_cons = p_cons(1);
+b_cons = p_cons(2);
+mu_min_cons = -b_cons / (2 * a_cons)
+p_rms = polyfit(points, rms_results, 2);
+a_rms = p_rms(1);
+b_rms = p_rms(2);
+mu_min_rms = -b_rms / (2 * a_rms)
 
 %% Plotting
 figure;
+sgtitle(['State estimation errors using lower \mu_{min} = ', num2str(lower_bound)]);
+subplot(2, 1, 1)
 hold on;
-plot(t_truth, x_truth(:, 1), 'g');
-x1_think = squeeze(x_mm(1, end, :));
-plot(t_mm, x1_think, 'r')
+plot(tkhist, squeeze(x_mm(1, end, :)) - xtruekhist(:, 1), 'g');
+plot(tkhist, 3*squeeze(P_mm(1, 1, end, :)), 'b');
+plot(tkhist, -3*squeeze(P_mm(1, 1, end, :)), 'b');
+ylim([-1, 1]);
+title('\theta');
+
+subplot(2, 1, 2)
+hold on;
+plot(tkhist, squeeze(x_mm(2, end, :)) - xtruekhist(:, 2), 'g');
+plot(tkhist, 3*squeeze(P_mm(2, 2, end, :)), 'b');
+plot(tkhist, -3*squeeze(P_mm(2, 2, end, :)), 'b');
+ylim([-1, 1]);
+title('\omega');
+xlabel('Time')
 
 figure;
-plot(t_mm, mu_mm);
-legend('mu1', 'mu2', 'mu3');
-
-figure;
-plot(t, x_truth_s(:, 1))
-plot(t_mm_s, squeeze(x_mm_s(1, end, :)), 'r');
-
-figure;
-plot(t_mm_s, mu_mm_s);
-legend('mu1', 'mu2', 'mu3');
+plot(tkhist, mu_mm);
+legend('\mu_1', '\mu_2', '\mu_3');
+title('Mode Probabilities Over Time')
 

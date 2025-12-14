@@ -42,7 +42,7 @@ P = repmat(P0, 1, 1, num_models);
 for k=1:num_meas
     % Run all the filters one step
     for j=1:num_models
-    [~, ~, xhat(:, j), P(:, :, j), nu(:, j), S(:, :, j)] = realtime_kf(F(:, :, j), G(:, :, j), Gamma(:, :, j), H(:, :, j), Q(:, :, j), R(:, :, j), u(k, :), z(k, :), xhat(:, j), P(:, :, j));
+    [~, ~, xhat(:, j), P(:, :, j), nu(:, j), S(:, :, j)] = kf_step(F(:, :, j), G(:, :, j), Gamma(:, :, j), H(:, :, j), Q(:, :, j), R(:, :, j), u(k, :), z(k, :), xhat(:, j), P(:, :, j));
     end
 
     % Save the estimates
@@ -62,7 +62,7 @@ for k=1:num_meas
     
     % Calculate the fused estimate
     x_fused = xhat*mu.';
-    P_fused = 0;
+    P_fused = zeros(nx, nx);
     for m=1:num_models % Sure there's a way to vectorize this a little smarter
         P_fused = P_fused + mu(m) * (P(:, :, m) + (xhat(:, m) - x_fused)*(xhat(:, m) - x_fused).');
     end
